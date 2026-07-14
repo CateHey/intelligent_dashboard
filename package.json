@@ -1,0 +1,30 @@
+{
+  "name": "dashboard-bi-inti",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Dashboard BI conversacional (Inti / Jim's Fencing) — Next.js + Supabase + Claude",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "test:portero": "tsx scripts/test-portero.ts"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.32.1",
+    "@electric-sql/pglite": "^0.5.4",
+    "@supabase/supabase-js": "^2.45.0",
+    "next": "^14.2.5",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "recharts": "^2.12.7",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.0",
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "tsx": "^4.23.0",
+    "typescript": "^5.5.3"
+  }
+}
