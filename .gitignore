@@ -16,3 +16,6 @@ next-env.d.ts.bak
 
 # Export del bot de n8n — no es parte del dashboard y expone lógica interna.
 wabot*.json
+
+.vercel
+.env*
