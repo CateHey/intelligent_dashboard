@@ -380,6 +380,35 @@ a {
   color: var(--danger);
 }
 
+/* ── Resultado de un solo valor (número grande) ─────── */
+.single-stat {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  padding: 20px 0;
+}
+.stat-item {
+  text-align: center;
+  padding: 8px 24px;
+}
+.stat-value {
+  font-size: 52px;
+  font-weight: 800;
+  color: var(--steel);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+}
+.stat-label {
+  font-size: 13px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  margin-top: 8px;
+}
+
 /* ── Tabla ──────────────────────────────────────────── */
 .tbl {
   width: 100%;

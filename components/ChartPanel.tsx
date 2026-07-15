@@ -16,7 +16,7 @@ import {
   Legend,
 } from "recharts";
 import type { ChartType, Row } from "@/lib/types";
-import { CHART_COLORS, inferKeys } from "./chartUtils";
+import { CHART_COLORS, inferKeys, formatMoney, formatNumber } from "./chartUtils";
 import { Skeleton } from "./Skeleton";
 
 const AXIS = { fill: "#8b9bb0", fontSize: 12 };
@@ -59,6 +59,13 @@ export function ChartPanel({
 
 function ChartBody({ type, data }: { type: ChartType; data: Row[] }) {
   const { cat, num } = inferKeys(data);
+
+  // Un solo resultado con pocas columnas (ej. "cuántos completados",
+  // "ingresos totales", "monto de Paulo") se muestra como número grande.
+  // Si tiene muchas columnas es un detalle → va como tabla.
+  if (data.length === 1 && Object.keys(data[0]).length <= 4) {
+    return <SingleStat row={data[0]} />;
+  }
 
   // Tabla: o pedido explícito, o cuando no se puede inferir un eje numérico.
   if (type === "table" || !cat || !num) {
@@ -126,6 +133,44 @@ function ChartBody({ type, data }: { type: ChartType; data: Row[] }) {
         </Bar>
       </BarChart>
     </ResponsiveContainer>
+  );
+}
+
+function looksLikeMoney(key: string): boolean {
+  return /monto|factur|ingres|precio|total|promedio|revenue|cost/i.test(key);
+}
+
+function formatValue(key: string, v: string | number | null): string {
+  if (v === null || v === "") return "—";
+  const n = Number(v);
+  if (v !== "" && !isNaN(n)) {
+    return looksLikeMoney(key) ? formatMoney(n) : formatNumber(n);
+  }
+  return String(v);
+}
+
+// Resultado de una sola fila: los números van grandes; el texto (ej. el nombre
+// del técnico) se usa como etiqueta. Si no hay ningún número, cae a tabla.
+function SingleStat({ row }: { row: Row }) {
+  const entries = Object.entries(row);
+  const isNum = (v: Row[string]) => v !== null && v !== "" && !isNaN(Number(v));
+  const nums = entries.filter(([, v]) => isNum(v));
+  const texts = entries.filter(([, v]) => !isNum(v));
+
+  if (nums.length === 0) return <DataTable data={[row]} />;
+
+  const caption =
+    texts.length > 0 ? texts.map(([, tv]) => String(tv)).join(" · ") : null;
+
+  return (
+    <div className="single-stat">
+      {nums.map(([k, v]) => (
+        <div className="stat-item" key={k}>
+          <div className="stat-value">{formatValue(k, v)}</div>
+          <div className="stat-label">{caption || k.replace(/_/g, " ")}</div>
+        </div>
+      ))}
+    </div>
   );
 }
 
