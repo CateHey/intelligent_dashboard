@@ -14,10 +14,10 @@ export interface Translation {
 }
 
 // Turno de conversación que el front guarda y reenvía (memoria de sesión).
+// role/content para dárselo a Claude como conversación real (incluye aclaraciones).
 export interface HistoryTurn {
-  q: string;
-  sql?: string;
-  title?: string;
+  role: "user" | "assistant";
+  content: string;
 }
 
 // Respuesta de /api/ask

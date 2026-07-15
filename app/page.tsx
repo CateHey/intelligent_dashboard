@@ -66,6 +66,15 @@ export default function Page() {
       });
       const json = (await res.json()) as AskResponse;
 
+      // Guarda el turno del usuario en la memoria de sesión (para toda respuesta).
+      const pushTurn = (assistantContent: string) => {
+        historyRef.current = [
+          ...historyRef.current,
+          { role: "user" as const, content: question },
+          { role: "assistant" as const, content: assistantContent },
+        ].slice(-12);
+      };
+
       if (json.ok) {
         setResult({
           title: json.title,
@@ -84,21 +93,16 @@ export default function Page() {
             sql: json.sql_shown,
           },
         ]);
-        // memoria de sesión (últimos 8 turnos)
-        historyRef.current = [
-          ...historyRef.current,
-          { q: question, sql: json.sql_shown, title: json.title },
-        ].slice(-8);
+        // El contexto para el próximo turno incluye el SQL usado.
+        pushTurn(`${json.title} (${json.data.length} filas). SQL: ${json.sql_shown}`);
       } else if (json.needs_clarification) {
-        setMessages((m) => [
-          ...m,
-          { role: "bot", text: json.clarification || "¿Podés aclarar la pregunta?" },
-        ]);
+        const c = json.clarification || "¿Podés aclarar la pregunta?";
+        setMessages((m) => [...m, { role: "bot", text: c }]);
+        pushTurn(c); // ← la aclaración ahora SÍ queda en el historial
       } else {
-        setMessages((m) => [
-          ...m,
-          { role: "bot", text: json.error || "No pude responder eso." },
-        ]);
+        const e = json.error || "No pude responder eso.";
+        setMessages((m) => [...m, { role: "bot", text: e }]);
+        pushTurn(e);
       }
     } catch {
       setMessages((m) => [

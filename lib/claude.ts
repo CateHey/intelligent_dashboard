@@ -57,8 +57,12 @@ REGLAS DURAS:
 - NO uses comentarios SQL (-- o /* */). NO uses punto y coma.
 - Incluí siempre un LIMIT razonable (máx ${QUERY_ROW_LIMIT}).
 - Para agregaciones usá GROUP BY y alias claros en español (ej. total, mes, tecnico).
-- Si la pregunta es ambigua o pide algo que la vista no tiene, NO inventes:
-  poné needs_clarification=true y una pregunta corta para aclarar.
+- Usá el CONTEXTO de la conversación: si algo ya se aclaró (ej. que "Paulo" es un
+  técnico, o el período), NO vuelvas a preguntarlo; resolvé con esa info.
+- Pedí aclaración (needs_clarification=true) SOLO si es imprescindible y no se puede
+  inferir. Ante un nombre de persona, asumí que es un técnico (columna "tecnico")
+  salvo que digan "cliente". Preferí responder con datos antes que preguntar.
+- Para filtrar por un nombre parcial usá ILIKE, ej. tecnico ILIKE '%Paulo%'.
 - Elegí "chart": 'bar' (comparar categorías), 'line' (evolución temporal),
   'pie' (proporción de un total), o 'table' (detalle/listado).
 
@@ -85,21 +89,17 @@ export async function translateToSql(
   // Sin API key (demo offline): traductor local por palabras clave.
   if (!HAS_CLAUDE) return localTranslate(question);
 
-  const ctx =
-    history.length > 0
-      ? `Contexto de la conversación (más reciente al final):\n` +
-        history
-          .slice(-8)
-          .map((h, i) => `${i + 1}. P: ${h.q}${h.sql ? `\n   SQL: ${h.sql}` : ""}`)
-          .join("\n") +
-        `\n\n`
-      : "";
+  // La conversación previa se pasa como mensajes reales, para que Claude
+  // resuelva referencias ya aclaradas ("es el técnico", "solo junio", etc.).
+  const priorMessages = history
+    .slice(-8)
+    .map((h) => ({ role: h.role, content: h.content }));
 
   const resp = await client().messages.create({
     model: ANTHROPIC_MODEL,
     max_tokens: 1024,
     system: TRANSLATE_SYSTEM(),
-    messages: [{ role: "user", content: `${ctx}Pregunta: ${question}` }],
+    messages: [...priorMessages, { role: "user", content: `Pregunta: ${question}` }],
   });
 
   const text = resp.content
