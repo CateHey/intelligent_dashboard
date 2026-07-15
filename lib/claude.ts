@@ -98,7 +98,6 @@ export async function translateToSql(
   const resp = await client().messages.create({
     model: ANTHROPIC_MODEL,
     max_tokens: 1024,
-    temperature: 0,
     system: TRANSLATE_SYSTEM(),
     messages: [{ role: "user", content: `${ctx}Pregunta: ${question}` }],
   });
@@ -149,7 +148,6 @@ export async function generateTip(question: string, rows: Row[]): Promise<string
   const resp = await client().messages.create({
     model: ANTHROPIC_MODEL,
     max_tokens: 300,
-    temperature: 0.4,
     system: TIP_SYSTEM,
     messages: [
       {

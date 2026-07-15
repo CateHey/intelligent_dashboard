@@ -7,7 +7,7 @@ function optional(name: string): string {
 export const SUPABASE_URL = optional("SUPABASE_URL");
 export const SUPABASE_SERVICE_ROLE_KEY = optional("SUPABASE_SERVICE_ROLE_KEY");
 export const ANTHROPIC_API_KEY = optional("ANTHROPIC_API_KEY");
-export const ANTHROPIC_MODEL = process.env.ANTHROPIC_MODEL || "claude-sonnet-4-6";
+export const ANTHROPIC_MODEL = process.env.ANTHROPIC_MODEL || "claude-sonnet-5";
 export const TENANT_ID =
   process.env.TENANT_ID || "ddec3ab2-ec58-46c8-912c-1d1cd00cae86";
 export const RATE_LIMIT_PER_MIN = Number(process.env.RATE_LIMIT_PER_MIN || 20);

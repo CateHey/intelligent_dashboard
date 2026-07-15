@@ -63,8 +63,25 @@ export async function POST(req: Request) {
     title = cached.title;
   } else {
     wasMiss = true;
-    // 2) Claude traduce NL -> SQL.
-    const t = await translateToSql(question, history);
+    // 2) Claude traduce NL -> SQL. Si Claude falla (modelo inválido, red, cuota),
+    //    devolvemos un error amable en vez de un 500 pelado.
+    let t;
+    try {
+      t = await translateToSql(question, history);
+    } catch (e: any) {
+      await logQuery({
+        question,
+        sql: null,
+        approved: false,
+        reject_reason: "claude_error: " + String(e?.message || e),
+        row_count: 0,
+        latency_ms: Date.now() - t0,
+      });
+      return reply({
+        ok: false,
+        error: "No pude procesar la pregunta ahora mismo. Probá de nuevo en un momento.",
+      });
+    }
     if (t.needs_clarification) {
       await logQuery({
         question,
