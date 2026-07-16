@@ -31,7 +31,7 @@ export function KpiRow({
         loading={loading}
       />
       <KpiCard
-        label="Ingresos del mes"
+        label="Ingresos del mes (completados)"
         value={k ? formatMoney(k.ingresos_mes) : "—"}
         tone="steel"
         loading={loading}

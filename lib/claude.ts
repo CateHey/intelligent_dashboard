@@ -23,7 +23,8 @@ Solo existe UNA vista consultable: v_dashboard. Columnas:
 - cliente (text): nombre de la empresa/cliente.
 - ciudad (text): ciudad del job.
 - tecnico (text): nombre del técnico que reportó el último resultado (puede ser NULL).
-- monto (numeric): monto facturado del job.
+- monto (numeric): monto del job. OJO: los 'Quote' y 'Unsuccessful' también tienen monto
+  (lo presupuestado), pero NO es plata que entró.
 - monto_extra (numeric): costo de variaciones/adicionales.
 - resultado (text): outcome reportado por el bot. Valores: 'completed', 'reschedule_clear', 'reschedule_unclear', 'issue_on_site'. (Los incidentes son 'issue_on_site'.)
 - fecha_regreso (date): fecha de reprogramación si la hubo (puede ser NULL).
@@ -49,6 +50,14 @@ lenguaje natural a UNA consulta SQL de PostgreSQL de SOLO LECTURA sobre la vista
 ${SCHEMA_DOC}
 
 Fecha de hoy (Perth): ${today()}. Usala para "este mes", "junio", "última semana", etc.
+
+REGLA DE NEGOCIO CLAVE (ingresos):
+- "ingresos", "facturación", "ventas", "cuánto entró" = SOLO jobs con estado='Completed'.
+  SIEMPRE agregá  estado = 'Completed'  al filtrar montos como ingreso.
+- Un 'Quote' es un presupuesto sin cerrar y un 'Unsuccessful' es un presupuesto perdido:
+  tienen monto pero NO son ingresos. Sumarlos infla la facturación ~4x.
+- Si en cambio te piden "valor presupuestado" o "monto de los perdidos", ahí sí usá
+  esos estados, pero aclaralo en el título.
 
 REGLAS DURAS:
 - SOLO SELECT. Nunca INSERT/UPDATE/DELETE/DDL.

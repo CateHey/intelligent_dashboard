@@ -10,12 +10,18 @@ export const dynamic = "force-dynamic";
 export const maxDuration = 30;
 
 // SQL fijo (no viene de Claude). Solo lee v_dashboard. Es el camino "sin IA".
+// OJO: "ingresos" = SOLO jobs Completed. Los Quote (presupuestos sin cerrar) y los
+// Unsuccessful (presupuestos perdidos) tienen monto cargado pero NO son plata que
+// entró — contarlos inflaba la facturación ~4x.
 const SQL_KPIS = `
 select
   count(*)::int as total_jobs,
   (count(*) filter (where estado = 'Completed'))::int as completados,
   (count(*) filter (where estado = 'Work Order'))::int as work_order,
-  coalesce(sum(monto) filter (where date_trunc('month', fecha) = date_trunc('month', now())), 0)::numeric as ingresos_mes
+  coalesce(sum(monto) filter (
+    where estado = 'Completed'
+      and date_trunc('month', fecha) = date_trunc('month', now())
+  ), 0)::numeric as ingresos_mes
 from v_dashboard`.trim();
 
 const SQL_ESTADOS = `
@@ -34,10 +40,11 @@ group by tecnico
 order by total desc
 limit 12`.trim();
 
+// Ingresos reales por mes: solo Completed (ver nota en SQL_KPIS).
 const SQL_INGRESOS = `
 select to_char(date_trunc('month', fecha), 'YYYY-MM') as mes, coalesce(sum(monto), 0)::numeric as total
 from v_dashboard
-where fecha is not null
+where fecha is not null and estado = 'Completed'
 group by date_trunc('month', fecha)
 order by date_trunc('month', fecha)
 limit 12`.trim();
